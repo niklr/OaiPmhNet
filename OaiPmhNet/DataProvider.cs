@@ -363,7 +363,7 @@ namespace OaiPmhNet
             var recordContainer = new RecordContainer();
 
             if (verb == OaiVerb.ListRecords)
-                recordContainer = _recordRepository.Get(arguments, resumptionToken);
+                recordContainer = _recordRepository.GetRecords(arguments, resumptionToken);
             else
                 recordContainer = _recordRepository.GetIdentifiers(arguments, resumptionToken);
 

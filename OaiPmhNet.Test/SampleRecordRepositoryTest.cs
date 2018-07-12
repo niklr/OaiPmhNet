@@ -72,7 +72,7 @@ namespace OaiPmhNet.Test
         }
 
         [Test]
-        public void SampleRecordRepository_Get()
+        public void SampleRecordRepository_GetRecords()
         {
             var expected1 = new RecordContainer()
             {
@@ -112,7 +112,7 @@ namespace OaiPmhNet.Test
                 }
             };
 
-            var actual1 = _repository.Get(new ArgumentContainer(OaiVerb.ListRecords.ToString()));
+            var actual1 = _repository.GetRecords(new ArgumentContainer(OaiVerb.ListRecords.ToString()));
 
             Assert.IsNotNull(actual1.ResumptionToken);
             Assert.AreEqual(expected1.ResumptionToken.CompleteListSize, actual1.ResumptionToken.CompleteListSize);
@@ -149,7 +149,7 @@ namespace OaiPmhNet.Test
                 }
             };
 
-            var actual2 = _repository.Get(new ArgumentContainer(OaiVerb.ListRecords.ToString()), actual1.ResumptionToken);
+            var actual2 = _repository.GetRecords(new ArgumentContainer(OaiVerb.ListRecords.ToString()), actual1.ResumptionToken);
 
             Assert.IsNotNull(actual2.ResumptionToken);
             Assert.AreEqual(expected2.ResumptionToken.CompleteListSize, actual2.ResumptionToken.CompleteListSize);

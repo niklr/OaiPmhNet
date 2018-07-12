@@ -30,7 +30,7 @@ namespace OaiPmhNet.Test
                 return null;
         }
 
-        public RecordContainer Get(ArgumentContainer arguments, IResumptionToken resumptionToken = null)
+        public RecordContainer GetRecords(ArgumentContainer arguments, IResumptionToken resumptionToken = null)
         {
             RecordContainer container = new RecordContainer();
 
@@ -94,7 +94,7 @@ namespace OaiPmhNet.Test
 
         public RecordContainer GetIdentifiers(ArgumentContainer arguments, IResumptionToken resumptionToken = null)
         {
-            return Get(arguments, resumptionToken);
+            return GetRecords(arguments, resumptionToken);
         }
 
         #region private methods
