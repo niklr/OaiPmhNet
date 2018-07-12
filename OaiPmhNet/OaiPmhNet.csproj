@@ -5,6 +5,7 @@
     <Product />
     <Company />
     <Authors>Roman Niklaus</Authors>
+    <Version>0.1.0</Version>
   </PropertyGroup>
 
 </Project>
