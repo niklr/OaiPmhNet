@@ -17,21 +17,24 @@ namespace OaiPmhNet
         private readonly IResumptionTokenConverter _resumptionTokenConverter;
         private readonly IMetadataFormatRepository _metadataFormatRepository;
         private readonly IRecordRepository _recordRepository;
+        private readonly ISetRepository _setRepository;
 
-        public DataProvider(IOaiConfiguration configuration, IMetadataFormatRepository metadataFormatRepository, IRecordRepository recordRepository)
-            : this(configuration, metadataFormatRepository, recordRepository, 
+        public DataProvider(IOaiConfiguration configuration, IMetadataFormatRepository metadataFormatRepository, 
+            IRecordRepository recordRepository, ISetRepository setRepository)
+            : this(configuration, metadataFormatRepository, recordRepository, setRepository,
                   new DateConverter(), new ResumptionTokenConverter(configuration, new DateConverter()))
         {
         }
 
         public DataProvider(IOaiConfiguration configuration, IMetadataFormatRepository metadataFormatRepository, IRecordRepository recordRepository,
-            IDateConverter dateConverter, IResumptionTokenConverter resumptionTokenConverter)
+            ISetRepository setRepository, IDateConverter dateConverter, IResumptionTokenConverter resumptionTokenConverter)
         {
             _configuration = configuration;
             _dateConverter = dateConverter;
             _resumptionTokenConverter = resumptionTokenConverter;
             _metadataFormatRepository = metadataFormatRepository;
             _recordRepository = recordRepository;
+            _setRepository = setRepository;
         }
 
         /// <summary>
@@ -57,7 +60,7 @@ namespace OaiPmhNet
                     case OaiVerb.GetRecord:
                         return CreateGetRecord(date, arguments);
                     case OaiVerb.ListSets:
-                        return new XDocument();
+                        return CreateListSets(date, arguments);
                     case OaiVerb.None:
                     default:
                         return CreateErrorDocument(date, OaiVerb.None, arguments, OaiErrors.BadVerb);
@@ -153,11 +156,11 @@ namespace OaiPmhNet
 
         private XDocument CreateErrorDocument(DateTime date, OaiVerb verb, ArgumentContainer arguments, XElement error)
         {
-            IList<XElement> elements = new List<XElement>();
-            elements.Add(CreateRequest(verb, arguments));
-            elements.Add(error);
+            IList<XElement> root = new List<XElement>();
+            root.Add(CreateRequest(verb, arguments));
+            root.Add(error);
 
-            return CreateXml(date, elements.ToArray());
+            return CreateXml(date, root.ToArray());
         }
 
         private XElement CreateHeaderXElement(RecordHeader header)
@@ -213,11 +216,11 @@ namespace OaiPmhNet
             if (record == null)
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.IdDoesNotExist);
 
-            IList<XElement> elements = new List<XElement>();
-            elements.Add(CreateRequest(verb, arguments));
+            IList<XElement> root = new List<XElement>();
+            root.Add(CreateRequest(verb, arguments));
 
             XElement content = new XElement(verb.ToString());
-            elements.Add(content);
+            root.Add(content);
 
             XElement recordElement = new XElement("record");
             content.Add(recordElement);
@@ -229,7 +232,7 @@ namespace OaiPmhNet
             if (record.Metadata != null)
                 recordElement.Add(CreateMetadataXElement(record.Metadata));
 
-            return CreateXml(date, elements.ToArray());
+            return CreateXml(date, root.ToArray());
         }
 
         private XDocument CreateIdentify(DateTime date, ArgumentContainer arguments)
@@ -241,11 +244,11 @@ namespace OaiPmhNet
             if (!OaiErrors.ValidateArguments(arguments, allowedArguments, out XElement errorElement))
                 return CreateErrorDocument(date, verb, arguments, errorElement);
 
-            IList<XElement> elements = new List<XElement>();
-            elements.Add(CreateRequest(verb, arguments));
+            IList<XElement> root = new List<XElement>();
+            root.Add(CreateRequest(verb, arguments));
 
             XElement content = new XElement(verb.ToString());
-            elements.Add(content);
+            root.Add(content);
 
             TryAddXElement(content, "repositoryName", _configuration.RepositoryName);
             TryAddXElement(content, "baseURL", _configuration.BaseUrl());
@@ -272,7 +275,7 @@ namespace OaiPmhNet
                     TryAddXElement(content, "description", description);
             }
 
-            return CreateXml(date, elements.ToArray());
+            return CreateXml(date, root.ToArray());
         }
 
         private XDocument CreateListMetadataFormats(DateTime date, ArgumentContainer arguments)
@@ -292,11 +295,11 @@ namespace OaiPmhNet
             if (formats.Count() <= 0)
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.NoMetadataFormats);
 
-            IList<XElement> elements = new List<XElement>();
-            elements.Add(CreateRequest(verb, arguments));
+            IList<XElement> root = new List<XElement>();
+            root.Add(CreateRequest(verb, arguments));
 
             XElement content = new XElement(verb.ToString());
-            elements.Add(content);
+            root.Add(content);
 
             foreach (var format in formats)
             {
@@ -307,7 +310,7 @@ namespace OaiPmhNet
                 TryAddXElement(formatElement, "schema", format.Schema?.ToString());
             }
 
-            return CreateXml(date, elements.ToArray());
+            return CreateXml(date, root.ToArray());
         }
 
         private XDocument CreateListIdentifiersOrRecords(DateTime date, ArgumentContainer arguments, OaiVerb verb, IResumptionToken resumptionToken = null)
@@ -367,7 +370,7 @@ namespace OaiPmhNet
             else
                 recordContainer = _recordRepository.GetIdentifiers(arguments, resumptionToken);
 
-            if (recordContainer.Records.Count() <= 0)
+            if (recordContainer == null || recordContainer.Records.Count() <= 0)
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.NoRecordsMatch);
 
             IList<XElement> root = new List<XElement>();
@@ -396,6 +399,66 @@ namespace OaiPmhNet
 
             if (recordContainer.ResumptionToken != null)
                 content.Add(_resumptionTokenConverter.ToXElement(recordContainer.ResumptionToken));
+
+            return CreateXml(date, root.ToArray());
+        }
+
+        private XDocument CreateListSets(DateTime date, ArgumentContainer arguments, IResumptionToken resumptionToken = null)
+        {
+            OaiVerb verb = OaiVerb.ListSets;
+
+            OaiArgument allowedArguments = OaiArgument.ResumptionToken;
+
+            if (!OaiErrors.ValidateArguments(arguments, allowedArguments, out XElement errorElement))
+                return CreateErrorDocument(date, verb, arguments, errorElement);
+
+            // Set
+            if (!_configuration.SupportSets)
+                return CreateErrorDocument(date, verb, arguments, OaiErrors.NoSetHierarchy);
+
+            // Decode ResumptionToken
+            if (resumptionToken == null && !string.IsNullOrWhiteSpace(arguments.ResumptionToken))
+            {
+                if (!OaiErrors.ValidateArguments(arguments, OaiArgument.ResumptionToken))
+                    return CreateErrorDocument(date, verb, arguments, OaiErrors.BadArgumentExclusiveResumptionToken);
+
+                IResumptionToken decodedResumptionToken = _resumptionTokenConverter.Decode(arguments.ResumptionToken);
+                if (decodedResumptionToken.ExpirationDate >= DateTime.UtcNow)
+                    return CreateErrorDocument(date, verb, arguments, OaiErrors.BadResumptionToken);
+
+                ArgumentContainer resumptionTokenArguments = new ArgumentContainer(
+                    verb.ToString(), decodedResumptionToken.MetadataPrefix, arguments.ResumptionToken, null,
+                    _dateConverter.Encode(_configuration.Granularity, decodedResumptionToken.From),
+                    _dateConverter.Encode(_configuration.Granularity, decodedResumptionToken.Until),
+                    decodedResumptionToken.Set);
+
+                return CreateListSets(date, resumptionTokenArguments, decodedResumptionToken);
+            }
+
+            var setContainer = _setRepository.GetSets(arguments, resumptionToken);
+
+            IList<XElement> root = new List<XElement>();
+            root.Add(CreateRequest(verb, arguments));
+
+            XElement content = new XElement(verb.ToString());
+            root.Add(content);
+
+            if (setContainer != null)
+            {
+                foreach (var set in setContainer.Sets)
+                {
+                    XElement setElement = new XElement("set");
+                    content.Add(setElement);
+                    TryAddXElement(setElement, "setSpec", set.Spec);
+                    TryAddXElement(setElement, "setName", set.Name);
+                    TryAddXElement(setElement, "setDescription", set.Description);
+                    foreach (var additionalDescription in set.AdditionalDescriptions)
+                        setElement.Add(new XElement("setDescription", additionalDescription));
+                }
+
+                if (setContainer.ResumptionToken != null)
+                    content.Add(_resumptionTokenConverter.ToXElement(setContainer.ResumptionToken));
+            }
 
             return CreateXml(date, root.ToArray());
         }

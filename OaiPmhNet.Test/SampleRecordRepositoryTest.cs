@@ -60,7 +60,7 @@ namespace OaiPmhNet.Test
             DateConverter dateConverter = new DateConverter();
             DublinCoreMetadataConverter dublinCoreMetadataConverter = new DublinCoreMetadataConverter(configuration, dateConverter);
 
-            return new SampleRecordRepository(OaiConfiguration.Instance, records, dateConverter, dublinCoreMetadataConverter);
+            return new SampleRecordRepository(configuration, records, dateConverter, dublinCoreMetadataConverter);
         }
 
         [OneTimeSetUp]

@@ -19,8 +19,9 @@ namespace OaiPmhNet.Test
             IOaiConfiguration configuration = OaiConfiguration.Instance;
             var metadataFormatRepository = SampleMetadataFormatRepositoryTest.Create();
             var recordRepository = SampleRecordRepositoryTest.Create();
+            var setRepository = SampleSetRepositoryTest.Create();
             _baseUrl = configuration.BaseUrl();
-            _dataProvider = new DataProvider(configuration, metadataFormatRepository, recordRepository);
+            _dataProvider = new DataProvider(configuration, metadataFormatRepository, recordRepository, setRepository);
         }
 
         [Test]
@@ -318,6 +319,32 @@ namespace OaiPmhNet.Test
 </OAI-PMH>";
 
             var arguments = new ArgumentContainer(OaiVerb.ListRecords.ToString(), "oai_dc");
+            var actual = _dataProvider.ToString(new DateTime(2018, 5, 8, 11, 5, 0, DateTimeKind.Utc), arguments);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void DataProvider_ListSets()
+        {
+            string expected = $@"{_xmlRoot}
+{_oaiPmhRoot}
+  <responseDate>2018-05-08T11:05:00Z</responseDate>
+  <request verb=""ListSets"">http://localhost/test</request>
+  <ListSets>
+    <set>
+      <setSpec>image</setSpec>
+      <setName>Image Collection</setName>
+    </set>
+    <set>
+      <setSpec>video</setSpec>
+      <setName>Video Collection</setName>
+      <setDescription>This set contains videos.</setDescription>
+    </set>
+  </ListSets>
+</OAI-PMH>";
+
+            var arguments = new ArgumentContainer(OaiVerb.ListSets.ToString());
             var actual = _dataProvider.ToString(new DateTime(2018, 5, 8, 11, 5, 0, DateTimeKind.Utc), arguments);
 
             Assert.AreEqual(expected, actual);

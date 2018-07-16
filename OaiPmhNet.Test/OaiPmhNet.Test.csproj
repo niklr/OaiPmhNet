@@ -67,6 +67,8 @@
     <Compile Include="SampleRecordRepository.cs" />
     <Compile Include="SampleRecordRepositoryTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SampleSetRepository.cs" />
+    <Compile Include="SampleSetRepositoryTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

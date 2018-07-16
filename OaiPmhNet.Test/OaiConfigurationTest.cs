@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using OaiPmhNet;
 
 namespace OaiPmhNet.Test
 {
@@ -13,6 +12,7 @@ namespace OaiPmhNet.Test
 
             config.BaseUrl = () => { return "http://localhost/test"; };
             config.PageSize = 2;
+            config.SupportSets = true;
             config.ResumptionTokenCustomParameterNames.Clear();
             config.ResumptionTokenCustomParameterNames.Add("placeholder");
         }

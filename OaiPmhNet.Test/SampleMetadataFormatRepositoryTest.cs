@@ -6,7 +6,7 @@ using OaiPmhNet.Models;
 namespace OaiPmhNet.Test
 {
     [TestFixture]
-    class SampleMetadataFormatRepositoryTest
+    public class SampleMetadataFormatRepositoryTest
     {
         private SampleMetadataFormatRepository _repository;
 
