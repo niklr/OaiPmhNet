@@ -61,7 +61,7 @@ config.ResumptionTokenCustomParameterNames.Add("offset");
 
 ### 5. Initialize the DataProvider class
 ```csharp
-DataProvider provider = new DataProvider(configuration, metadataFormatRepository, recordRepository);
+DataProvider provider = new DataProvider(config, metadataFormatRepository, recordRepository, setRepository);
 ```
 
 ### 6. Pass ArgumentContainer to DataProvider
