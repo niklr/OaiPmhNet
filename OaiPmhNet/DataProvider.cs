@@ -326,14 +326,18 @@ namespace OaiPmhNet
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.NoSetHierarchy);
 
             // From
-            if (!string.IsNullOrWhiteSpace(arguments.From) && !_dateConverter.TryDecode(arguments.From, out DateTime fromDate))
+            DateTime fromDate = DateTime.MinValue;
+            if (!string.IsNullOrWhiteSpace(arguments.From) && !_dateConverter.TryDecode(arguments.From, out fromDate))
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.BadFromArgument);
 
             // Until
-            if (!string.IsNullOrWhiteSpace(arguments.Until) && !_dateConverter.TryDecode(arguments.Until, out DateTime untilDate))
+            DateTime untilDate = DateTime.MinValue;
+            if (!string.IsNullOrWhiteSpace(arguments.Until) && !_dateConverter.TryDecode(arguments.Until, out untilDate))
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.BadUntilArgument);
 
-            // TODO: the from argument must be less than or equal to the until argument. Otherwise, a repository must issue a badArgument error.
+            // The from argument must be less than or equal to the until argument. 
+            if (fromDate > untilDate)
+                return CreateErrorDocument(date, verb, arguments, OaiErrors.BadFromUntilCombinationArgument);
 
             // Decode ResumptionToken
             if (resumptionToken == null && !string.IsNullOrWhiteSpace(arguments.ResumptionToken))

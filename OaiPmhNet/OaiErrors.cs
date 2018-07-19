@@ -65,6 +65,8 @@ namespace OaiPmhNet
             "The value of the identifier argument is unknown or illegal in this repository.");
         public static XElement NoRecordsMatch => Error("noRecordsMatch",
             "The combination of the values of the 'from', 'until', 'set' and 'metadataPrefix' arguments results in an empty list.");
+        public static XElement BadFromUntilCombinationArgument => Error("badArgument",
+            "The 'from' argument must be less than or equal to the 'until' argument.");
 
         public static bool ValidateArguments(ArgumentContainer arguments, OaiArgument allowedArguments)
         {

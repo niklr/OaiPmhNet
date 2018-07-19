@@ -251,32 +251,6 @@ namespace OaiPmhNet.Test
         }
 
         [Test]
-        public void DataProvider_ListIdentifiers()
-        {
-            string expected = $@"{_xmlRoot}
-{_oaiPmhRoot}
-  <responseDate>2018-05-08T11:05:00Z</responseDate>
-  <request verb=""ListIdentifiers"" metadataPrefix=""oai_dc"">http://localhost/test</request>
-  <ListIdentifiers>
-    <header>
-      <identifier>11</identifier>
-      <datestamp>2018-02-16T01:00:00Z</datestamp>
-    </header>
-    <header>
-      <identifier>12</identifier>
-      <datestamp>2018-02-16T02:00:00Z</datestamp>
-    </header>
-    <resumptionToken completeListSize=""5"" cursor=""0"">metadataPrefix%3doai_dc</resumptionToken>
-  </ListIdentifiers>
-</OAI-PMH>";
-
-            var arguments = new ArgumentContainer(OaiVerb.ListIdentifiers.ToString(), "oai_dc");
-            var actual = _dataProvider.ToString(new DateTime(2018, 5, 8, 11, 5, 0, DateTimeKind.Utc), arguments);
-
-            Assert.AreEqual(expected, actual);
-        }
-
-        [Test]
         public void DataProvider_ListRecords()
         {
             string expected = $@"{_xmlRoot}
@@ -319,6 +293,80 @@ namespace OaiPmhNet.Test
 </OAI-PMH>";
 
             var arguments = new ArgumentContainer(OaiVerb.ListRecords.ToString(), "oai_dc");
+            var actual = _dataProvider.ToString(new DateTime(2018, 5, 8, 11, 5, 0, DateTimeKind.Utc), arguments);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void DataProvider_ListIdentifiers_BadFromArgument()
+        {
+            string expected = $@"{_xmlRoot}
+{_oaiPmhRoot}
+  <responseDate>2018-05-08T11:05:00Z</responseDate>
+  <request verb=""ListIdentifiers"" metadataPrefix=""oai_dc"" from=""1987"">http://localhost/test</request>
+  <error code=""badArgument"">The request includes a 'from' argument that has an illegal syntax / granularity.</error>
+</OAI-PMH>";
+
+            var arguments = new ArgumentContainer(OaiVerb.ListIdentifiers.ToString(), "oai_dc", null, null, "1987");
+            var actual = _dataProvider.ToString(new DateTime(2018, 5, 8, 11, 5, 0, DateTimeKind.Utc), arguments);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void DataProvider_ListIdentifiers_BadUntilArgument()
+        {
+            string expected = $@"{_xmlRoot}
+{_oaiPmhRoot}
+  <responseDate>2018-05-08T11:05:00Z</responseDate>
+  <request verb=""ListIdentifiers"" metadataPrefix=""oai_dc"" until=""1987"">http://localhost/test</request>
+  <error code=""badArgument"">The request includes a 'until' argument that has an illegal syntax / granularity.</error>
+</OAI-PMH>";
+
+            var arguments = new ArgumentContainer(OaiVerb.ListIdentifiers.ToString(), "oai_dc", null, null, null, "1987");
+            var actual = _dataProvider.ToString(new DateTime(2018, 5, 8, 11, 5, 0, DateTimeKind.Utc), arguments);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void DataProvider_ListIdentifiers_BadFromUntilCombinationArgument()
+        {
+            string expected = $@"{_xmlRoot}
+{_oaiPmhRoot}
+  <responseDate>2018-05-08T11:05:00Z</responseDate>
+  <request verb=""ListIdentifiers"" metadataPrefix=""oai_dc"" from=""1987-02-17T00:00:00Z"" until=""1987-02-16T00:00:00Z"">http://localhost/test</request>
+  <error code=""badArgument"">The 'from' argument must be less than or equal to the 'until' argument.</error>
+</OAI-PMH>";
+
+            var arguments = new ArgumentContainer(OaiVerb.ListIdentifiers.ToString(), "oai_dc", null, null, "1987-02-17T00:00:00Z", "1987-02-16T00:00:00Z");
+            var actual = _dataProvider.ToString(new DateTime(2018, 5, 8, 11, 5, 0, DateTimeKind.Utc), arguments);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void DataProvider_ListIdentifiers()
+        {
+            string expected = $@"{_xmlRoot}
+{_oaiPmhRoot}
+  <responseDate>2018-05-08T11:05:00Z</responseDate>
+  <request verb=""ListIdentifiers"" metadataPrefix=""oai_dc"">http://localhost/test</request>
+  <ListIdentifiers>
+    <header>
+      <identifier>11</identifier>
+      <datestamp>2018-02-16T01:00:00Z</datestamp>
+    </header>
+    <header>
+      <identifier>12</identifier>
+      <datestamp>2018-02-16T02:00:00Z</datestamp>
+    </header>
+    <resumptionToken completeListSize=""5"" cursor=""0"">metadataPrefix%3doai_dc</resumptionToken>
+  </ListIdentifiers>
+</OAI-PMH>";
+
+            var arguments = new ArgumentContainer(OaiVerb.ListIdentifiers.ToString(), "oai_dc");
             var actual = _dataProvider.ToString(new DateTime(2018, 5, 8, 11, 5, 0, DateTimeKind.Utc), arguments);
 
             Assert.AreEqual(expected, actual);
