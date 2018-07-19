@@ -13,7 +13,7 @@ namespace OaiPmhNet.Test
             _dictionary = metadataFormats.ToDictionary(f => f.Prefix, f => f);
         }
 
-        public MetadataFormat GetByPrefix(string prefix)
+        public MetadataFormat GetMetadataFormat(string prefix)
         {
             if (_dictionary.TryGetValue(prefix, out MetadataFormat format))
                 return format;
@@ -21,9 +21,9 @@ namespace OaiPmhNet.Test
                 return null;
         }
 
-        public IQueryable<MetadataFormat> GetQuery()
+        public IEnumerable<MetadataFormat> GetMetadataFormats()
         {
-            return _dictionary.Select(o => o.Value).AsQueryable();
+            return _dictionary.Select(o => o.Value);
         }
     }
 }

@@ -207,7 +207,7 @@ namespace OaiPmhNet
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.BadMetadataArgument);
 
             // Check if metadata prefix is supported
-            var metadataPrefix = _metadataFormatRepository.GetByPrefix(arguments.MetadataPrefix);
+            var metadataPrefix = _metadataFormatRepository.GetMetadataFormat(arguments.MetadataPrefix);
             if (metadataPrefix == null)
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.CannotDisseminateFormat);
 
@@ -290,7 +290,7 @@ namespace OaiPmhNet
             if (!string.IsNullOrWhiteSpace(arguments.Identifier) && _recordRepository.GetRecord(arguments.Identifier, arguments.MetadataPrefix) == null)
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.IdDoesNotExist);
 
-            var formats = _metadataFormatRepository.GetQuery().OrderBy(e => e.Prefix);
+            var formats = _metadataFormatRepository.GetMetadataFormats().OrderBy(e => e.Prefix);
 
             if (formats.Count() <= 0)
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.NoMetadataFormats);
@@ -359,7 +359,7 @@ namespace OaiPmhNet
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.BadMetadataArgument);
 
             // Check if metadata prefix is supported
-            var metadataPrefix = _metadataFormatRepository.GetByPrefix(arguments.MetadataPrefix);
+            var metadataPrefix = _metadataFormatRepository.GetMetadataFormat(arguments.MetadataPrefix);
             if (metadataPrefix == null)
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.CannotDisseminateFormat);
 

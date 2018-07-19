@@ -45,7 +45,7 @@ namespace OaiPmhNet.Test
                     OaiNamespaces.OaiDcSchema,
                     OaiNamespaces.OaiDcSchemaLocation);
 
-            var actual = _repository.GetByPrefix("oai_dc");
+            var actual = _repository.GetMetadataFormat("oai_dc");
 
             Assert.AreEqual(expected.Prefix, actual.Prefix);
             Assert.AreEqual(expected.Namespace, actual.Namespace);
@@ -58,7 +58,7 @@ namespace OaiPmhNet.Test
         {
             var expected = 2;
 
-            var actual = _repository.GetQuery().Count();
+            var actual = _repository.GetMetadataFormats().Count();
 
             Assert.AreEqual(expected, actual);
         }

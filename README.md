@@ -31,8 +31,8 @@ public interface IRecordRepository
 ```csharp
 public interface IMetadataFormatRepository
 {
-	MetadataFormat GetByPrefix(string prefix);
-	IQueryable<MetadataFormat> GetQuery();
+	MetadataFormat GetMetadataFormat(string prefix);
+	IEnumerable<MetadataFormat> GetMetadataFormats();
 }
 ```
 
