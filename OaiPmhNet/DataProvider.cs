@@ -142,9 +142,9 @@ namespace OaiPmhNet
                         attributes.Add(new XAttribute("metadataPrefix", arguments.MetadataPrefix));
                     if (!string.IsNullOrWhiteSpace(arguments.ResumptionToken))
                         attributes.Add(new XAttribute("resumptionToken", arguments.ResumptionToken));
-                    if (!string.IsNullOrWhiteSpace(arguments.From))
+                    if (!string.IsNullOrWhiteSpace(arguments.From) && _dateConverter.TryDecode(arguments.From, out DateTime fromDateTime))
                         attributes.Add(new XAttribute("from", arguments.From));
-                    if (!string.IsNullOrWhiteSpace(arguments.Until))
+                    if (!string.IsNullOrWhiteSpace(arguments.Until) && _dateConverter.TryDecode(arguments.Until, out DateTime untilDateTime))
                         attributes.Add(new XAttribute("until", arguments.Until));
                     if (!string.IsNullOrWhiteSpace(arguments.Set))
                         attributes.Add(new XAttribute("set", arguments.Set));

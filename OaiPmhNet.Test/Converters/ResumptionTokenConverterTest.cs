@@ -90,7 +90,7 @@ namespace OaiPmhNet.Test.Converters
             token.Custom.Add("test", "123");
 
             var actual = _converter.ToXElement(token).ToString();
-            var expected = "<resumptionToken expirationDate=\"2019-02-16T00:00:00Z\" completeListSize=\"123\" cursor=\"321\" placeholder=\"123\">" +
+            var expected = "<resumptionToken expirationDate=\"2019-02-16T00:00:00Z\" completeListSize=\"123\" cursor=\"321\">" +
                 "metadataPrefix%3doai_dc%26from%3d1987-02-16T00%3a00%3a00Z%26until%3d2018-02-16T00%3a00%3a00Z%26set%3dtest123%26placeholder%3d123</resumptionToken>";
 
             Assert.AreEqual(expected, actual);
