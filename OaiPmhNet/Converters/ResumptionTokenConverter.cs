@@ -110,12 +110,6 @@ namespace OaiPmhNet.Converters
             if (resumptionToken.Cursor.HasValue)
                 root.Add(new XAttribute("cursor", resumptionToken.Cursor.Value));
 
-            foreach (var custom in resumptionToken.Custom)
-            {
-                if (_configuration.ResumptionTokenCustomParameterNames.Contains(custom.Key))
-                    root.Add(new XAttribute(custom.Key, custom.Value));
-            }
-
             return root;
         }
     }

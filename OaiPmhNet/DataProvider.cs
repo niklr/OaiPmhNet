@@ -187,6 +187,27 @@ namespace OaiPmhNet
                 root.Add(new XElement(name, content));
         }
 
+        private string GetDisplayGranularity()
+        {
+            if (string.IsNullOrWhiteSpace(_configuration.Granularity))
+            {
+                return string.Empty;
+            }
+            else
+            {
+                string granularity = _configuration.Granularity.Replace("'", "").ToLowerInvariant();
+                switch (granularity)
+                {
+                    case "yyyy-mm-dd":
+                        return "YYYY-MM-DD";
+                    case "yyyy-mm-ddthh:mm:ssz":
+                        return "YYYY-MM-DDThh:mm:ssZ";
+                    default:
+                        return string.Empty;
+                }
+            }
+        }
+
         #region OAI-PMH 2.0 verbs
 
         private XDocument CreateGetRecord(DateTime date, ArgumentContainer arguments)
@@ -253,15 +274,16 @@ namespace OaiPmhNet
             TryAddXElement(content, "repositoryName", _configuration.RepositoryName);
             TryAddXElement(content, "baseURL", _configuration.BaseUrl());
             TryAddXElement(content, "protocolVersion", _configuration.ProtocolVersion);
-            TryAddXElement(content, "earliestDatestamp", _configuration.EarliestDatestamp);
-            TryAddXElement(content, "deletedRecord", _configuration.DeletedRecord);
-            TryAddXElement(content, "granularity", _configuration.Granularity?.Replace("'", ""));
 
             if (_configuration.AdminEmails != null)
             {
                 foreach (var adminEmail in _configuration.AdminEmails)
                     TryAddXElement(content, "adminEmail", adminEmail);
             }
+
+            TryAddXElement(content, "earliestDatestamp", _configuration.EarliestDatestamp);
+            TryAddXElement(content, "deletedRecord", _configuration.DeletedRecord);
+            TryAddXElement(content, "granularity", GetDisplayGranularity());
 
             if (_configuration.Compressions != null)
             {
@@ -306,8 +328,8 @@ namespace OaiPmhNet
                 XElement formatElement = new XElement("metadataFormat");
                 content.Add(formatElement);
                 TryAddXElement(formatElement, "metadataPrefix", format.Prefix);
-                TryAddXElement(formatElement, "metadataNamespace", format.Namespace?.ToString());
                 TryAddXElement(formatElement, "schema", format.Schema?.ToString());
+                TryAddXElement(formatElement, "metadataNamespace", format.Namespace?.ToString());
             }
 
             return CreateXml(date, root.ToArray());
@@ -345,17 +367,24 @@ namespace OaiPmhNet
                 if (!OaiErrors.ValidateArguments(arguments, OaiArgument.ResumptionToken))
                     return CreateErrorDocument(date, verb, arguments, OaiErrors.BadArgumentExclusiveResumptionToken);
 
-                IResumptionToken decodedResumptionToken = _resumptionTokenConverter.Decode(arguments.ResumptionToken);
-                if (decodedResumptionToken.ExpirationDate >= DateTime.UtcNow)
+                try
+                {
+                    IResumptionToken decodedResumptionToken = _resumptionTokenConverter.Decode(arguments.ResumptionToken);
+                    if (decodedResumptionToken.ExpirationDate >= DateTime.UtcNow)
+                        return CreateErrorDocument(date, verb, arguments, OaiErrors.BadResumptionToken);
+
+                    ArgumentContainer resumptionTokenArguments = new ArgumentContainer(
+                        verb.ToString(), decodedResumptionToken.MetadataPrefix, arguments.ResumptionToken, null,
+                        _dateConverter.Encode(_configuration.Granularity, decodedResumptionToken.From),
+                        _dateConverter.Encode(_configuration.Granularity, decodedResumptionToken.Until),
+                        decodedResumptionToken.Set);
+
+                    return CreateListIdentifiersOrRecords(date, resumptionTokenArguments, verb, decodedResumptionToken);
+                }
+                catch (Exception)
+                {
                     return CreateErrorDocument(date, verb, arguments, OaiErrors.BadResumptionToken);
-
-                ArgumentContainer resumptionTokenArguments = new ArgumentContainer(
-                    verb.ToString(), decodedResumptionToken.MetadataPrefix, arguments.ResumptionToken, null,
-                    _dateConverter.Encode(_configuration.Granularity, decodedResumptionToken.From),
-                    _dateConverter.Encode(_configuration.Granularity, decodedResumptionToken.Until),
-                    decodedResumptionToken.Set);
-
-                return CreateListIdentifiersOrRecords(date, resumptionTokenArguments, verb, decodedResumptionToken);
+                }
             }
 
             // Check if required metadata prefix is included in the request

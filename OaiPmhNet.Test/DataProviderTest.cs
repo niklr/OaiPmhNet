@@ -130,10 +130,10 @@ namespace OaiPmhNet.Test
     <repositoryName>MyRepository</repositoryName>
     <baseURL>{_baseUrl}</baseURL>
     <protocolVersion>2.0</protocolVersion>
+    <adminEmail>test@domain.ch</adminEmail>
     <earliestDatestamp>1987-02-16T00:00:00Z</earliestDatestamp>
     <deletedRecord>no</deletedRecord>
-    <granularity>yyyy-MM-ddTHH:mm:ssZ</granularity>
-    <adminEmail>test@domain.ch</adminEmail>
+    <granularity>YYYY-MM-DDThh:mm:ssZ</granularity>
   </Identify>
 </OAI-PMH>";
 
@@ -185,13 +185,13 @@ namespace OaiPmhNet.Test
   <ListMetadataFormats>
     <metadataFormat>
       <metadataPrefix>oai_dc</metadataPrefix>
-      <metadataNamespace>http://www.openarchives.org/OAI/2.0/oai_dc/</metadataNamespace>
       <schema>http://www.openarchives.org/OAI/2.0/oai_dc.xsd</schema>
+      <metadataNamespace>http://www.openarchives.org/OAI/2.0/oai_dc/</metadataNamespace>
     </metadataFormat>
     <metadataFormat>
       <metadataPrefix>rdf</metadataPrefix>
-      <metadataNamespace>http://www.w3.org/1999/02/22-rdf-syntax-ns#</metadataNamespace>
       <schema>http://www.openarchives.org/OAI/2.0/rdf.xsd</schema>
+      <metadataNamespace>http://www.w3.org/1999/02/22-rdf-syntax-ns#</metadataNamespace>
     </metadataFormat>
   </ListMetadataFormats>
 </OAI-PMH>";
@@ -245,6 +245,22 @@ namespace OaiPmhNet.Test
 </OAI-PMH>";
 
             var arguments = new ArgumentContainer(OaiVerb.ListRecords.ToString(), "test");
+            var actual = _dataProvider.ToString(new DateTime(2018, 5, 8, 11, 5, 0, DateTimeKind.Utc), arguments);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void DataProvider_ListRecords_BadResumptionToken()
+        {
+            string expected = $@"{_xmlRoot}
+{_oaiPmhRoot}
+  <responseDate>2018-05-08T11:05:00Z</responseDate>
+  <request verb=""ListRecords"" resumptionToken=""junktoken"">{_baseUrl}</request>
+  <error code=""badResumptionToken"">The value of the 'resumptionToken' argument is invalid or expired.</error>
+</OAI-PMH>";
+
+            var arguments = new ArgumentContainer(OaiVerb.ListRecords.ToString(), null, "junktoken");
             var actual = _dataProvider.ToString(new DateTime(2018, 5, 8, 11, 5, 0, DateTimeKind.Utc), arguments);
 
             Assert.AreEqual(expected, actual);
