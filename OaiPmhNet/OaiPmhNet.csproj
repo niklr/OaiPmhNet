@@ -1,12 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net4;net45</TargetFrameworks>
     <Product />
     <Company />
-    <Authors>Roman Niklaus</Authors>
-    <Version>0.3.1</Version>
-    <AssemblyVersion>0.3.1.0</AssemblyVersion>
+    <Authors>niklr</Authors>
+    <Version>0.4.0</Version>
+    <AssemblyVersion>0.4.0.0</AssemblyVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>OaiPmhNet is a .NET library implementing the OAI-PMH specification.</Description>
+    <PackageLicenseUrl>https://github.com/niklr/OaiPmhNet/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/niklr/OaiPmhNet</PackageProjectUrl>
+    <PackageReleaseNotes />
+    <PackageTags>oai-pmh</PackageTags>
   </PropertyGroup>
-
+  
+  <ItemGroup Condition="'$(TargetFramework)' == 'net4' Or '$(TargetFramework)' == 'net45'">
+    <Reference Include="System.Web" />
+  </ItemGroup>
+  
 </Project>
