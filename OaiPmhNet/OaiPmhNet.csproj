@@ -5,14 +5,15 @@
     <Product />
     <Company />
     <Authors>niklr</Authors>
-    <Version>0.4.0</Version>
-    <AssemblyVersion>0.4.0.0</AssemblyVersion>
+    <Version>0.4.1</Version>
+    <AssemblyVersion>0.4.1.0</AssemblyVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>OaiPmhNet is a .NET library implementing the OAI-PMH specification.</Description>
     <PackageLicenseUrl>https://github.com/niklr/OaiPmhNet/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/niklr/OaiPmhNet</PackageProjectUrl>
     <PackageReleaseNotes />
     <PackageTags>oai-pmh</PackageTags>
+    <FileVersion>0.4.1.0</FileVersion>
   </PropertyGroup>
   
   <ItemGroup Condition="'$(TargetFramework)' == 'net4' Or '$(TargetFramework)' == 'net45'">

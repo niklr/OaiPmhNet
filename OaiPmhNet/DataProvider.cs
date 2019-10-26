@@ -208,6 +208,16 @@ namespace OaiPmhNet
             }
         }
 
+        private DateTime EarliestDatestamp
+        {
+            get
+            {
+                DateTime earliestDatestamp = DateTime.MinValue;
+                _dateConverter.TryDecode(_configuration.EarliestDatestamp, out earliestDatestamp);
+                return earliestDatestamp;
+            }
+        }
+
         #region OAI-PMH 2.0 verbs
 
         private XDocument CreateGetRecord(DateTime date, ArgumentContainer arguments)
@@ -361,9 +371,15 @@ namespace OaiPmhNet
             if (fromDate > untilDate)
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.BadFromUntilCombinationArgument);
 
-            if (!string.IsNullOrWhiteSpace(arguments.Until) && !string.IsNullOrWhiteSpace(arguments.From) && arguments.Until.Length!=arguments.From.Length)
-                return CreateErrorDocument(date,verb,arguments,OaiErrors.BadUntilFromArgument);
-                
+            // The from and until arguments must have the same granularity (either YYYY-MM-DD or YYYY-MM-DDThh:mm:ssZ)
+            if (!string.IsNullOrWhiteSpace(arguments.Until) && !string.IsNullOrWhiteSpace(arguments.From) && arguments.Until.Length != arguments.From.Length)
+                return CreateErrorDocument(date, verb, arguments, OaiErrors.BadUntilFromArgument);
+
+            // The request specified a date before the earliestDatestamp.
+            // There should therefore not be any records with datestamps on or before this date and a noRecordsMatch error code should be returned.
+            if (!string.IsNullOrWhiteSpace(arguments.Until) && untilDate <= EarliestDatestamp)
+                return CreateErrorDocument(date, verb, arguments, OaiErrors.NoRecordsMatch);
+
             // Decode ResumptionToken
             if (resumptionToken == null && !string.IsNullOrWhiteSpace(arguments.ResumptionToken))
             {

@@ -347,6 +347,38 @@ namespace OaiPmhNet.Test
         }
 
         [Test]
+        public void DataProvider_ListIdentifiers_BadUntilFromArgument()
+        {
+            string expected = $@"{_xmlRoot}
+{_oaiPmhRoot}
+  <responseDate>2018-05-08T11:05:00Z</responseDate>
+  <request verb=""ListIdentifiers"" metadataPrefix=""oai_dc"" from=""1987-02-15"" until=""1987-02-16T00:00:00Z"">http://localhost/test</request>
+  <error code=""badArgument"">The request has different granularities for the from and until parameters.</error>
+</OAI-PMH>";
+
+            var arguments = new ArgumentContainer(OaiVerb.ListIdentifiers.ToString(), "oai_dc", null, null, "1987-02-15", "1987-02-16T00:00:00Z");
+            var actual = _dataProvider.ToString(new DateTime(2018, 5, 8, 11, 5, 0, DateTimeKind.Utc), arguments);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void DataProvider_ListIdentifiers_NoRecordsMatch()
+        {
+            string expected = $@"{_xmlRoot}
+{_oaiPmhRoot}
+  <responseDate>2018-05-08T11:05:00Z</responseDate>
+  <request verb=""ListIdentifiers"" metadataPrefix=""oai_dc"" until=""1986-02-16T00:00:00Z"">http://localhost/test</request>
+  <error code=""noRecordsMatch"">The combination of the values of the 'from', 'until', 'set' and 'metadataPrefix' arguments results in an empty list.</error>
+</OAI-PMH>";
+
+            var arguments = new ArgumentContainer(OaiVerb.ListIdentifiers.ToString(), "oai_dc", null, null, null, "1986-02-16T00:00:00Z");
+            var actual = _dataProvider.ToString(new DateTime(2018, 5, 8, 11, 5, 0, DateTimeKind.Utc), arguments);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
         public void DataProvider_ListIdentifiers_BadFromUntilCombinationArgument()
         {
             string expected = $@"{_xmlRoot}
