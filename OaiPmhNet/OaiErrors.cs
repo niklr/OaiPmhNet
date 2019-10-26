@@ -34,6 +34,8 @@ namespace OaiPmhNet
             "The request includes a 'from' argument that has an illegal syntax / granularity.");
         public static XElement BadUntilArgument => Error("badArgument",
             "The request includes a 'until' argument that has an illegal syntax / granularity.");
+        public static XElement BadUntilFromArgument => Error("badArgument",
+            "The request has different granularities for the from and until parameters.");
 
         // Verb
         public static XElement BadVerb => Error("badVerb",

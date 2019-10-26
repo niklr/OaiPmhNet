@@ -361,6 +361,9 @@ namespace OaiPmhNet
             if (fromDate > untilDate)
                 return CreateErrorDocument(date, verb, arguments, OaiErrors.BadFromUntilCombinationArgument);
 
+            if (!string.IsNullOrWhiteSpace(arguments.Until) && !string.IsNullOrWhiteSpace(arguments.From) && arguments.Until.Length!=arguments.From.Length)
+                return CreateErrorDocument(date,verb,arguments,OaiErrors.BadUntilFromArgument);
+                
             // Decode ResumptionToken
             if (resumptionToken == null && !string.IsNullOrWhiteSpace(arguments.ResumptionToken))
             {
